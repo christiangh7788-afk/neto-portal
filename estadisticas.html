@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estadísticas de Uso · Portal Neto</title>
+<style>
+  :root{--navy:#13294b;--orange:#F47B20;--teal:#1FA89B;--dim:rgba(255,255,255,.6)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;color:#fff;min-height:100vh;padding:22px 16px 40px;
+    background:radial-gradient(ellipse 120% 105% at 47% 30%,#021A72 0%,#011562 52%,#010C42 100%) #010C42}
+  .wrap{max-width:1000px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  h1{font-size:1.5rem}h1 span{color:var(--orange)}
+  .meta{font-size:.78rem;color:var(--dim)}
+  button{cursor:pointer;border:0;border-radius:10px;padding:9px 16px;font-weight:700;background:var(--orange);color:#fff}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+  .kpi{background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);
+    border-radius:14px;padding:16px 18px}
+  .kpi .n{font-size:2rem;font-weight:800;line-height:1}
+  .kpi .l{font-size:.78rem;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+  .panel{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.13);
+    border-radius:16px;padding:18px 20px;margin-bottom:18px}
+  .panel h2{font-size:1rem;margin-bottom:14px;color:#fff}
+  .row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:.86rem}
+  .row .name{flex:0 0 42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:7px;background:var(--orange)}
+  .row .v{flex:0 0 44px;text-align:right;font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.row .name{flex-basis:46%}}
+  .muted{color:var(--dim);font-size:.85rem;text-align:center;padding:20px}
+  .err{color:#FFC1A8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Estadísticas de Uso · <span>Portal Neto</span></h1>
+      <div class="meta" id="meta">Cargando…</div>
+    </div>
+    <button onclick="cargar()">↻ Actualizar</button>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel">
+    <h2>Tableros más usados</h2>
+    <div id="dash"><div class="muted">Cargando…</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel"><h2>Usuarios más activos</h2><div id="users"></div></div>
+    <div class="panel"><h2>Uso por zona</h2><div id="zonas"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Actividad por día</h2>
+    <div id="dias"></div>
+  </div>
+</div>
+
+<script>
+  /* ============ CONFIG ============ */
+  const API = "https://script.google.com/macros/s/AKfycbx7_qlHuiQ7x9Pn6fXQhHHZuBppOu9jDFDGhaPjz9lqjJmQa2MtBIOgSy9sMQmjHhi-/exec";   /* ← misma URL del Web App */
+  /* ================================ */
+
+  function bars(el, obj, color, max){
+    const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length){ el.innerHTML='<div class="muted">Sin datos aún</div>'; return; }
+    const top = Math.max.apply(null, entries.map(e=>e[1]));
+    const lim = max ? entries.slice(0,max) : entries;
+    el.innerHTML = lim.map(([k,v])=>
+      `<div class="row"><span class="name" title="${k}">${k}</span>`+
+      `<span class="bar"><i style="width:${Math.round(v/top*100)}%;background:${color}"></i></span>`+
+      `<span class="v">${v}</span></div>`).join('');
+  }
+
+  async function cargar(){
+    const meta=document.getElementById('meta');
+    if(!API.startsWith('http')){ meta.innerHTML='<span class="err">Falta configurar la URL del backend (const API).</span>'; return; }
+    meta.textContent='Cargando…';
+    try{
+      const r=await fetch(API+'?action=stats');
+      const d=await r.json();
+      if(!d.ok) throw new Error(d.error||'error');
+      const usuarios=Object.keys(d.porUsuario||{}).length;
+      const tableros=Object.keys(d.porDashboard||{}).length;
+      document.getElementById('kpis').innerHTML=[
+        ['Ingresos',d.totalLogins],['Aperturas de tablero',d.totalClicks],
+        ['Usuarios distintos',usuarios],['Tableros usados',tableros]
+      ].map(([l,n])=>`<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+      bars(document.getElementById('dash'),  d.porDashboard||{}, '#F47B20');
+      bars(document.getElementById('users'), d.porUsuario||{},  '#1FA89B', 12);
+      bars(document.getElementById('zonas'), d.porZona||{},     '#2BD17E', 12);
+      bars(document.getElementById('dias'),  d.porDia||{},      '#8B5CF6');
+      meta.textContent='Actualizado: '+(d.generado||'');
+    }catch(e){ meta.innerHTML='<span class="err">No se pudo cargar: '+e.message+'</span>'; }
+  }
+  cargar();
+</script>
+</body>
+</html>
