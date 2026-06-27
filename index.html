@@ -321,58 +321,79 @@
   }
 
   function getInputs(){
-    const m = window.matchMedia('(max-width:760px)').matches; const s = m ? 'M' : '';
-    return { ei:document.getElementById('empInput'+s), pi:document.getElementById('pinInput'+s), err:document.getElementById('loginErr'+s) };
+    const m=window.matchMedia('(max-width:760px)').matches, s=m?'M':'';
+    return {ei:document.getElementById('empInput'+s),pi:document.getElementById('pinInput'+s),err:document.getElementById('loginErr'+s)};
   }
-  /* ===== Huella (WebAuthn) ===== */
+
+  /* ===== Acceso rápido: guarda credenciales localmente ===== */
+  const CRED_KEY='neto_cred';
+  function saveCred(emp,pin){ try{ localStorage.setItem(CRED_KEY,JSON.stringify({emp,pin})); }catch(e){} }
+  function loadCred(){ try{ return JSON.parse(localStorage.getItem(CRED_KEY)||'null'); }catch(e){return null;} }
+  function clearCred(){ localStorage.removeItem(CRED_KEY); }
+
+  /* Intento de huella nativa (solo si está disponible y funciona) */
   function bioOK(){ return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create); }
-  function b2b(buf){ const b=new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
-  function s2b(s){ const bin=atob(s); const b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b.buffer; }
-  async function registerBio(emp,nombre,zona){
-    try{
-      const cred=await navigator.credentials.create({publicKey:{
-        challenge:crypto.getRandomValues(new Uint8Array(32)),
-        rp:{name:'Portal Neto Veracruz'},
-        user:{id:new TextEncoder().encode(emp), name:emp, displayName:nombre||emp},
-        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-        authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
-        timeout:60000, attestation:'none'
-      }});
-      localStorage.setItem('neto_bio', JSON.stringify({id:b2b(cred.rawId), emp:emp, nombre:nombre, zona:zona}));
-      return true;
-    }catch(e){ return false; }
-  }
-  async function bioLogin(){
-    const data=JSON.parse(localStorage.getItem('neto_bio')||'null'); if(!data) return;
+  function b2b(buf){ const b=new Uint8Array(buf);let s='';for(let i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s); }
+  function s2b(s){ const bin=atob(s);const b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer; }
+
+  async function tryBioLogin(){
+    const data=JSON.parse(localStorage.getItem('neto_bio')||'null'); if(!data) return false;
     try{
       await navigator.credentials.get({publicKey:{
         challenge:crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials:[{type:'public-key', id:s2b(data.id)}],
-        userVerification:'required', timeout:60000
+        allowCredentials:[{type:'public-key',id:s2b(data.id)}],
+        userVerification:'required',timeout:30000
       }});
       setSession({emp:data.emp,nombre:data.nombre,zona:data.zona});
-      showPortal(data.nombre);
-    }catch(e){}
+      showPortal(data.nombre); return true;
+    }catch(e){ return false; }
   }
-  async function afterLogin(emp,nombre,zona){
-    const ex=JSON.parse(localStorage.getItem('neto_bio')||'null');
-    if(bioOK() && emp.toLowerCase()!=='campo26' && (!ex || ex.emp!==emp)){
-      try{ if(confirm('¿Activar acceso con huella para no escribir tu número la próxima vez?')) await registerBio(emp,nombre,zona); }catch(e){}
-    }
-    showPortal(nombre);
+
+  async function quickLogin(){
+    /* 1. intenta huella WebAuthn */
+    if(bioOK()){ const ok=await tryBioLogin(); if(ok) return; }
+    /* 2. fallback: credenciales guardadas → entra sin escribir nada */
+    const c=loadCred(); if(!c) return;
+    const err=getInputs().err; if(err) err.textContent='Validando…';
+    try{
+      const r=await fetch(API+'?action=login&emp='+encodeURIComponent(c.emp)+'&pin='+encodeURIComponent(c.pin));
+      const d=await r.json();
+      if(d.ok){ setSession({emp:c.emp,nombre:d.nombre,zona:d.zona}); showPortal(d.nombre); }
+      else{ clearCred(); if(err) err.textContent=''; }
+    }catch(e){ if(err) err.textContent=''; }
   }
+
   async function doLogin(){
     const {ei,pi,err}=getInputs();
     const emp=(ei.value||'').trim(), pin=(pi.value||'').trim();
-    if(!emp || !pin){ err.textContent='Escribe tu número de empleado y tu PIN'; return; }
+    if(!emp||!pin){ err.textContent='Escribe tu número de empleado y tu PIN'; return; }
     if(!API.startsWith('http')){ err.textContent='Falta configurar la URL del backend'; return; }
     err.textContent='Validando…';
     try{
       const r=await fetch(API+'?action=login&emp='+encodeURIComponent(emp)+'&pin='+encodeURIComponent(pin));
       const d=await r.json();
-      if(d.ok){ setSession({emp:emp,nombre:d.nombre,zona:d.zona}); await afterLogin(emp,d.nombre,d.zona); }
+      if(d.ok){
+        setSession({emp:emp,nombre:d.nombre,zona:d.zona});
+        /* guardar credenciales para acceso rápido la próxima vez */
+        if(emp.toLowerCase()!=='campo26') saveCred(emp,pin);
+        /* intentar registrar huella nativa (silencioso, sin confirm) */
+        if(bioOK() && emp.toLowerCase()!=='campo26'){
+          try{
+            const cred=await navigator.credentials.create({publicKey:{
+              challenge:crypto.getRandomValues(new Uint8Array(32)),
+              rp:{name:'Portal Neto Veracruz'},
+              user:{id:new TextEncoder().encode(emp),name:emp,displayName:d.nombre||emp},
+              pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+              authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
+              timeout:30000, attestation:'none'
+            }});
+            localStorage.setItem('neto_bio',JSON.stringify({id:b2b(cred.rawId),emp:emp,nombre:d.nombre,zona:d.zona}));
+          }catch(e){}
+        }
+        showPortal(d.nombre);
+      }
       else if(d.error==='pin incorrecto'){ err.textContent='PIN incorrecto.'; }
-      else { err.textContent='Número no válido. Verifica e intenta de nuevo.'; }
+      else{ err.textContent='Número no válido. Verifica e intenta de nuevo.'; }
     }catch(e){ err.textContent='No se pudo conectar. Revisa tu red.'; }
   }
 
@@ -393,11 +414,15 @@
 
   document.addEventListener('DOMContentLoaded', ()=>{
     const u=getSession();
-    if(u){ showPortal(u.nombre); }
-    else {
-      document.getElementById('login').style.display='flex';
-      const bio=JSON.parse(localStorage.getItem('neto_bio')||'null'); const bb=document.getElementById('bioBtn');
-      if(bio && bioOK() && bb){ bb.style.display='inline-flex'; bb.addEventListener('click', bioLogin); }
+    if(u){ showPortal(u.nombre); return; }
+    document.getElementById('login').style.display='flex';
+    /* acceso rápido automático (huella o cred guardadas) */
+    const hasBio=!!localStorage.getItem('neto_bio'), hasCred=!!localStorage.getItem(CRED_KEY);
+    const bb=document.getElementById('bioBtn');
+    if(hasBio||hasCred){
+      if(bb){ bb.style.display='inline-flex'; bb.textContent='🔒 Entrar sin contraseña'; bb.addEventListener('click', quickLogin); }
+      /* en móvil entrar automático tras 400ms para que se vea la pantalla */
+      setTimeout(quickLogin, 500);
     }
     document.querySelectorAll('a.card').forEach(a=>{
       a.addEventListener('click', ()=>{ const h=a.querySelector('h3'); logEvent('CLICK', h?h.textContent.trim():''); });
