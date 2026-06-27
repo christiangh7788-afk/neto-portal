@@ -165,9 +165,15 @@
   .login-err{min-height:18px;margin-top:12px;font-size:.8rem;color:#FFC1A8}
   #userTag{display:none;margin-left:8px;font-weight:400;color:rgba(255,255,255,.55)}
   #userTag a{color:#F47B20;text-decoration:none;margin-left:6px}
+
+  #statsFab{position:fixed;top:14px;right:16px;z-index:50;display:none;align-items:center;gap:7px;
+    padding:10px 16px;border-radius:999px;background:#F47B20;color:#fff;font-weight:800;font-size:.86rem;
+    text-decoration:none;box-shadow:0 8px 22px rgba(0,0,0,.4);letter-spacing:.02em}
+  #statsFab:hover{filter:brightness(1.08)}
 </style>
 </head>
 <body>
+  <a id="statsFab" href="estadisticas.html" target="_blank">📊 Estadísticas</a>
 
   <div id="login">
     <div class="login-card">
@@ -292,6 +298,8 @@
       h+=' <a href="#" onclick="logout();return false">Salir</a>';
       t.innerHTML=h; t.style.display='inline';
     }
+    const fab=document.getElementById('statsFab');
+    if(fab) fab.style.display = esMaster ? 'inline-flex' : 'none';
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
