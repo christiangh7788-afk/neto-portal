@@ -85,9 +85,9 @@
   .lead em{font-style:normal;color:transparent;-webkit-text-stroke:1.4px rgba(255,255,255,.7)}
 
   /* cards */
-  .cards{display:flex;flex-direction:column;gap:12px}
+  .cards{display:flex;flex-direction:column;gap:8px}
   .card{position:relative;display:flex;align-items:center;gap:15px;
-    padding:14px 16px;border-radius:15px;text-decoration:none;color:var(--white);
+    padding:10px 16px;border-radius:15px;text-decoration:none;color:var(--white);
     background:linear-gradient(150deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
     border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);
     overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease}
@@ -98,7 +98,7 @@
     background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.08));outline:none}
   .card:hover::before,.card:focus-visible::before{transform:scaleY(1)}
   .card:focus-visible{box-shadow:0 0 0 3px rgba(255,255,255,.5)}
-  .ic{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  .ic{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
     background:var(--accent,var(--orange));box-shadow:0 6px 16px rgba(0,0,0,.3)}
   .ic svg{width:23px;height:23px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .ct{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -110,7 +110,8 @@
   .c-ventas{--accent:#F47B20}
   .c-clasif{--accent:#1FA89B}
   .c-merma{--accent:#FF5A5A}
-  .c-mayoreo{--accent:#FFC53D}
+  .c-especiales{--accent:#FFC53D}
+  .c-vspres{--accent:#38BDF8}
   .c-finanzas{--accent:#2BD17E}
 
   /* ── Agenda Coach (próximamente) ── */
@@ -145,9 +146,41 @@
   @media (prefers-reduced-motion:reduce){
     .figure img,.atmos::before,.atmos::after{animation:none}
   }
+
+  /* ── Login por número de empleado ── */
+  #login{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse 120% 105% at 47% 42%,#021A72 0%,#011562 52%,#010C42 100%) #010C42}
+  .login-card{width:min(380px,92vw);text-align:center;padding:34px 28px;border-radius:20px;
+    background:linear-gradient(150deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
+    border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);box-shadow:0 22px 60px rgba(0,0,0,.5)}
+  .login-star{color:#F47B20;letter-spacing:.3em;font-size:1.1rem;margin-bottom:8px}
+  .login-card h2{font-family:'Archivo Black',sans-serif;font-size:1.45rem;margin:0 0 4px;color:#fff}
+  .login-card .sub{color:rgba(255,255,255,.6);font-size:.8rem;margin:0 0 22px}
+  .login-card input{width:100%;padding:14px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.08);color:#fff;font-size:1.05rem;text-align:center;letter-spacing:.06em;outline:none}
+  .login-card input:focus{border-color:#F47B20;background:rgba(255,255,255,.12)}
+  .login-card button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;cursor:pointer;
+    background:#F47B20;color:#fff;font-weight:800;font-size:1rem;letter-spacing:.03em;transition:filter .15s}
+  .login-card button:hover{filter:brightness(1.07)}
+  .login-err{min-height:18px;margin-top:12px;font-size:.8rem;color:#FFC1A8}
+  #userTag{display:none;margin-left:8px;font-weight:400;color:rgba(255,255,255,.55)}
+  #userTag a{color:#F47B20;text-decoration:none;margin-left:6px}
 </style>
 </head>
 <body>
+
+  <div id="login">
+    <div class="login-card">
+      <div class="login-star">★ ★ ★</div>
+      <h2>Portal de Operaciones</h2>
+      <p class="sub">Compañía Veracruz · Número + PIN (últimos 3 dígitos)</p>
+      <input id="empInput" type="text" placeholder="Número de empleado" autocomplete="off" maxlength="12">
+      <input id="pinInput" type="password" placeholder="PIN (últimos 3 dígitos de tu número)" autocomplete="off" maxlength="12" style="margin-top:10px">
+      <button id="loginBtn">Ingresar</button>
+      <div id="loginErr" class="login-err"></div>
+    </div>
+  </div>
+
 <div class="atmos"></div>
 <div class="gridtex"></div>
 
@@ -170,32 +203,32 @@
           <span class="ct"><h3>Ventas Neto</h3><p>Avance de ventas diarias por zona y tienda</p></span>
           <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-
-        <a class="card c-clasif" href="https://neto-clasificacion-qfpl.vercel.app" target="_blank" rel="noopener">
-          <span class="ic"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg></span>
-          <span class="ct"><h3>Clasificación</h3><p>Ranking de las 240 tiendas por desempeño</p></span>
+<a class="card c-especiales" href="https://christiangh7788-afk.github.io/neto-dashboard-mayoreo/" target="_blank" rel="noopener">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
+          <span class="ct"><h3>Ventas Especiales</h3><p>Seguimiento de ventas especiales por zona</p></span>
           <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-
-        <a class="card c-merma" href="https://neto-merma.vercel.app" target="_blank" rel="noopener">
+        <a class="card c-vspres" href="https://ventasciaveracruz.vercel.app/" target="_blank" rel="noopener">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><rect x="7" y="11" width="3" height="6" rx="0.6"/><rect x="12.5" y="6.5" width="3" height="10.5" rx="0.6"/><rect x="18" y="13" width="3" height="4" rx="0.6"/></svg></span>
+          <span class="ct"><h3>Ventas vs Presupuesto</h3><p>Seguimiento de ventas contra presupuesto</p></span>
+          <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+<a class="card c-merma" href="https://neto-merma.vercel.app" target="_blank" rel="noopener">
           <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M21 7v6M21 7h-6"/></svg></span>
           <span class="ct"><h3>Control de Merma</h3><p>Merma con depósito · objetivo −0.65%</p></span>
           <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-
-        <a class="card c-finanzas" href="https://serviciosfinancieros.vercel.app/" target="_blank" rel="noopener">
+<a class="card c-clasif" href="https://neto-clasificacion-qfpl.vercel.app" target="_blank" rel="noopener">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg></span>
+          <span class="ct"><h3>Clasificación</h3><p>Ranking de las 240 tiendas por desempeño</p></span>
+          <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+<a class="card c-finanzas" href="https://serviciosfinancieros.vercel.app/" target="_blank" rel="noopener">
           <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
           <span class="ct"><h3>Servicios Financieros</h3><p>11 servicios en 240 tiendas · multiperiodo</p></span>
           <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-
-        <a class="card c-mayoreo" href="https://christiangh7788-afk.github.io/neto-dashboard-mayoreo/" target="_blank" rel="noopener">
-          <span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>
-          <span class="ct"><h3>Ventas Mayoreo</h3><p>Seguimiento de ventas de mayoreo por zona</p></span>
-          <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-
-        <a class="card c-agenda" href="https://genda-coach-neto-9zfku0tz2-christiangh7788-9010s-projects.vercel.app" target="_blank" rel="noopener">
+<a class="card c-agenda" href="https://genda-coach-neto-9zfku0tz2-christiangh7788-9010s-projects.vercel.app" target="_blank" rel="noopener">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></span>
           <span class="ct"><h3>Agenda Virtual Coach</h3><p>Seguimiento de visitas y compromisos</p></span>
           <span class="soon-band">Próximamente</span>
@@ -203,10 +236,68 @@
         </a>
       </div>
 
-      <p class="footnote"><b>Tiendas Neto</b> · Compañía Veracruz — Gerencia Divisional de Operaciones</p>
+      <p class="footnote"><b>Tiendas Neto</b> · Compañía Veracruz — Gerencia Divisional de Operaciones<span id="userTag"></span></p>
     </div>
   </div>
 </main>
 
+
+<script>
+  /* ============ CONFIG ============ */
+  const API = "https://script.google.com/macros/s/AKfycbx7_qlHuiQ7x9Pn6fXQhHHZuBppOu9jDFDGhaPjz9lqjJmQa2MtBIOgSy9sMQmjHhi-/exec";   /* ← reemplaza con la URL del Web App */
+  const SESSION_HORAS = 12;
+  /* ================================ */
+
+  function getSession(){
+    try{ const s=JSON.parse(localStorage.getItem('neto_portal_user')||'null');
+      if(!s) return null;
+      if(Date.now()-s.ts > SESSION_HORAS*3600*1000){ localStorage.removeItem('neto_portal_user'); return null; }
+      return s;
+    }catch(e){ return null; }
+  }
+  function setSession(u){ u.ts=Date.now(); localStorage.setItem('neto_portal_user', JSON.stringify(u)); }
+  function logout(){ localStorage.removeItem('neto_portal_user'); location.reload(); }
+
+  function logEvent(evento, dashboard){
+    const u=getSession(); if(!u || !API.startsWith('http')) return;
+    const payload=JSON.stringify({emp:u.emp,nombre:u.nombre,zona:u.zona,evento:evento,dashboard:dashboard||''});
+    try{ if(!navigator.sendBeacon(API,payload)) throw 0; }
+    catch(e){ fetch(API,{method:'POST',body:payload,keepalive:true,mode:'no-cors'}).catch(()=>{}); }
+  }
+
+  async function doLogin(){
+    const inp=document.getElementById('empInput'), err=document.getElementById('loginErr');
+    const emp=(inp.value||'').trim();
+    const pin=(document.getElementById('pinInput').value||'').trim();
+    if(!emp || !pin){ err.textContent='Escribe tu número de empleado y tu PIN'; return; }
+    if(!API.startsWith('http')){ err.textContent='Falta configurar la URL del backend'; return; }
+    err.textContent='Validando…';
+    try{
+      const r=await fetch(API+'?action=login&emp='+encodeURIComponent(emp)+'&pin='+encodeURIComponent(pin));
+      const d=await r.json();
+      if(d.ok){ setSession({emp:emp,nombre:d.nombre,zona:d.zona}); showPortal(d.nombre); }
+      else if(d.error==='pin incorrecto'){ err.textContent='PIN incorrecto.'; }
+      else { err.textContent='Número no válido. Verifica e intenta de nuevo.'; }
+    }catch(e){ err.textContent='No se pudo conectar. Revisa tu red.'; }
+  }
+
+  function showPortal(nombre){
+    document.getElementById('login').style.display='none';
+    const t=document.getElementById('userTag');
+    if(t){ t.innerHTML='· '+(nombre||'')+' <a href="#" onclick="logout();return false">Salir</a>'; t.style.display='inline'; }
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const u=getSession();
+    if(u){ showPortal(u.nombre); } else { document.getElementById('login').style.display='flex';
+      setTimeout(()=>{ const i=document.getElementById('empInput'); if(i) i.focus(); }, 100); }
+    document.querySelectorAll('a.card').forEach(a=>{
+      a.addEventListener('click', ()=>{ const h=a.querySelector('h3'); logEvent('CLICK', h?h.textContent.trim():''); });
+    });
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('empInput').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('pinInput').focus(); });
+    document.getElementById('pinInput').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+  });
+</script>
 </body>
 </html>
