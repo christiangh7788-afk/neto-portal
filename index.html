@@ -311,7 +311,7 @@
     }catch(e){ return null; }
   }
   function setSession(u){ u.ts=Date.now(); localStorage.setItem('neto_portal_user', JSON.stringify(u)); }
-  function logout(){ localStorage.removeItem('neto_portal_user'); location.reload(); }
+  function logout(){ localStorage.removeItem('neto_portal_user'); sessionStorage.setItem('neto_logout','1'); location.reload(); }
 
   function logEvent(evento, dashboard){
     const u=getSession(); if(!u || !API.startsWith('http')) return;
@@ -416,13 +416,16 @@
     const u=getSession();
     if(u){ showPortal(u.nombre); return; }
     document.getElementById('login').style.display='flex';
-    /* acceso rápido automático (huella o cred guardadas) */
+    /* acceso rápido: NO auto-entrar si el usuario acaba de cerrar sesión manualmente */
+    const fueLogout=sessionStorage.getItem('neto_logout'); sessionStorage.removeItem('neto_logout');
     const hasBio=!!localStorage.getItem('neto_bio'), hasCred=!!localStorage.getItem(CRED_KEY);
     const bb=document.getElementById('bioBtn');
-    if(hasBio||hasCred){
+    if((hasBio||hasCred) && !fueLogout){
       if(bb){ bb.style.display='inline-flex'; bb.textContent='🔒 Entrar sin contraseña'; bb.addEventListener('click', quickLogin); }
-      /* en móvil entrar automático tras 400ms para que se vea la pantalla */
       setTimeout(quickLogin, 500);
+    } else if((hasBio||hasCred) && fueLogout){
+      /* mostrar el botón pero NO entrar solo — el usuario eligió salir */
+      if(bb){ bb.style.display='inline-flex'; bb.textContent='🔒 Entrar sin contraseña'; bb.addEventListener('click', quickLogin); }
     }
     document.querySelectorAll('a.card').forEach(a=>{
       a.addEventListener('click', ()=>{ const h=a.querySelector('h3'); logEvent('CLICK', h?h.textContent.trim():''); });
