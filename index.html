@@ -283,8 +283,15 @@
 
   function showPortal(nombre){
     document.getElementById('login').style.display='none';
+    const u=getSession();
+    const esMaster = u && String(u.emp).toLowerCase()==='campo26';
     const t=document.getElementById('userTag');
-    if(t){ t.innerHTML='· '+(nombre||'')+' <a href="#" onclick="logout();return false">Salir</a>'; t.style.display='inline'; }
+    if(t){
+      let h='· '+(nombre||'');
+      if(esMaster){ h+=' <a href="estadisticas.html" target="_blank">📊 Estadísticas</a>'; }
+      h+=' <a href="#" onclick="logout();return false">Salir</a>';
+      t.innerHTML=h; t.style.display='inline';
+    }
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
