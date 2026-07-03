@@ -315,9 +315,18 @@
 
   function logEvent(evento, dashboard){
     const u=getSession(); if(!u || !API.startsWith('http')) return;
-    const payload=JSON.stringify({emp:u.emp,nombre:u.nombre,zona:u.zona,evento:evento,dashboard:dashboard||''});
-    try{ if(!navigator.sendBeacon(API,payload)) throw 0; }
-    catch(e){ fetch(API,{method:'POST',body:payload,keepalive:true,mode:'no-cors'}).catch(()=>{}); }
+    // Registrar via GET con script tag (mismo método que funciona para login)
+    const s=document.createElement('script');
+    s.src=API
+      +'?action=log'
+      +'&emp='+encodeURIComponent(u.emp||'')
+      +'&nombre='+encodeURIComponent(u.nombre||'')
+      +'&zona='+encodeURIComponent(u.zona||'')
+      +'&evento='+encodeURIComponent(evento||'')
+      +'&dashboard='+encodeURIComponent(dashboard||'')
+      +'&_='+Date.now();
+    s.onload=s.onerror=()=>s.remove();
+    document.head.appendChild(s);
   }
 
   function getInputs(){
