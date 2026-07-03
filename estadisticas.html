@@ -3,101 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Estadísticas de Uso · Portal Neto</title>
+<title>Estadísticas · Portal Neto</title>
 <style>
   :root{--navy:#13294b;--orange:#F47B20;--teal:#1FA89B;--dim:rgba(255,255,255,.6)}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',system-ui,sans-serif;color:#fff;min-height:100vh;padding:22px 16px 40px;
+  body{font-family:'Segoe UI',system-ui,sans-serif;color:#fff;min-height:100vh;padding:20px 14px 40px;
     background:radial-gradient(ellipse 120% 105% at 47% 30%,#021A72 0%,#011562 52%,#010C42 100%) #010C42}
-  .wrap{max-width:1000px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
-  h1{font-size:1.5rem}h1 span{color:var(--orange)}
-  .meta{font-size:.78rem;color:var(--dim)}
-  button{cursor:pointer;border:0;border-radius:10px;padding:9px 16px;font-weight:700;background:var(--orange);color:#fff}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+  .wrap{max-width:1060px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+  h1{font-size:1.4rem}h1 span{color:var(--orange)}
+  .meta{font-size:.76rem;color:var(--dim);margin-top:2px}
+  .hdr-btns{display:flex;gap:8px}
+  button{cursor:pointer;border:0;border-radius:10px;padding:9px 16px;font-weight:700;background:var(--orange);color:#fff;font-size:.85rem}
+  button.sec{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
   .kpi{background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);
-    border-radius:14px;padding:16px 18px}
-  .kpi .n{font-size:2rem;font-weight:800;line-height:1}
-  .kpi .l{font-size:.78rem;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
-  .panel{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.13);
-    border-radius:16px;padding:18px 20px;margin-bottom:18px}
-  .panel h2{font-size:1rem;margin-bottom:14px;color:#fff}
-  .row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:.86rem}
-  .row .name{flex:0 0 42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .bar{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
-  .bar > i{display:block;height:100%;border-radius:7px;background:var(--orange)}
-  .row .v{flex:0 0 44px;text-align:right;font-weight:700}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:680px){.grid2{grid-template-columns:1fr}.row .name{flex-basis:46%}}
-  .muted{color:var(--dim);font-size:.85rem;text-align:center;padding:20px}
+    border-radius:14px;padding:14px 16px}
+  .kpi .n{font-size:1.9rem;font-weight:800;line-height:1}
+  .kpi .l{font-size:.72rem;color:var(--dim);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+  .kpi.warn .n{color:#FFC53D}
+  .panel{background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;padding:16px 18px;margin-bottom:16px}
+  .panel h2{font-size:.95rem;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:8px}
+  .panel h2 .badge{font-size:.7rem;background:rgba(255,255,255,.12);padding:2px 8px;border-radius:20px;font-weight:400}
+  .row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.83rem}
+  .row .name{flex:0 0 44%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{flex:1;height:13px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:7px}
+  .row .v{flex:0 0 40px;text-align:right;font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  /* tabla sin-registro */
+  .no-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+  .no-tbl th{text-align:left;padding:6px 10px;color:var(--dim);font-weight:600;border-bottom:1px solid rgba(255,255,255,.1);text-transform:uppercase;font-size:.68rem;letter-spacing:.04em}
+  .no-tbl td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .no-tbl tr:last-child td{border-bottom:0}
+  .no-tbl tr:hover td{background:rgba(255,255,255,.04)}
+  .no-tbl .zona{color:var(--dim);font-size:.74rem}
+  .muted{color:var(--dim);font-size:.83rem;text-align:center;padding:18px}
   .err{color:#FFC1A8}
+  .search{width:100%;padding:8px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.07);color:#fff;font-size:.83rem;margin-bottom:12px;outline:none}
+  .search:focus{border-color:var(--orange)}
+  @media(max-width:660px){.grid2{grid-template-columns:1fr}.row .name{flex-basis:48%}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div>
-      <h1>Estadísticas de Uso · <span>Portal Neto</span></h1>
+      <h1>Estadísticas · <span>Portal Neto Veracruz</span></h1>
       <div class="meta" id="meta">Cargando…</div>
     </div>
-    <button onclick="cargar()">↻ Actualizar</button>
+    <div class="hdr-btns">
+      <button class="sec" onclick="exportCSV()">⬇ CSV</button>
+      <button onclick="cargar()">↻ Actualizar</button>
+    </div>
   </header>
 
   <div class="kpis" id="kpis"></div>
 
+  <!-- Tableros más usados -->
   <div class="panel">
     <h2>Tableros más usados</h2>
     <div id="dash"><div class="muted">Cargando…</div></div>
   </div>
 
   <div class="grid2">
-    <div class="panel"><h2>Usuarios más activos</h2><div id="users"></div></div>
-    <div class="panel"><h2>Uso por zona</h2><div id="zonas"></div></div>
+    <div class="panel">
+      <h2>🏆 Top 15 · Mayor actividad</h2>
+      <div id="topMas"></div>
+    </div>
+    <div class="panel">
+      <h2>⚠️ Top 15 · Menor actividad</h2>
+      <div id="topMenos"></div>
+    </div>
   </div>
 
+  <!-- Actividad por día -->
   <div class="panel">
     <h2>Actividad por día</h2>
     <div id="dias"></div>
   </div>
+
+  <!-- Sin registro -->
+  <div class="panel">
+    <h2 id="sinTit">Sin registro en el portal <span class="badge" id="sinBadge"></span></h2>
+    <input class="search" id="buscar" placeholder="Buscar por nombre o zona…" oninput="filtrarSin()" style="display:none">
+    <div id="sinReg"><div class="muted">Cargando…</div></div>
+  </div>
 </div>
 
 <script>
-  /* ============ CONFIG ============ */
-  const API = "https://script.google.com/macros/s/AKfycbx7_qlHuiQ7x9Pn6fXQhHHZuBppOu9jDFDGhaPjz9lqjJmQa2MtBIOgSy9sMQmjHhi-/exec";   /* ← misma URL del Web App */
-  /* ================================ */
+  const API = "https://script.google.com/macros/s/AKfycbx7_qlHuiQ7x9Pn6fXQhHHZuBppOu9jDFDGhaPjz9lqjJmQa2MtBIOgSy9sMQmjHhi-/exec";
+  let _sinData = [];
 
-  function bars(el, obj, color, max){
-    const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  function bars(el, obj, color){
+    const entries = Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]);
     if(!entries.length){ el.innerHTML='<div class="muted">Sin datos aún</div>'; return; }
-    const top = Math.max.apply(null, entries.map(e=>e[1]));
-    const lim = max ? entries.slice(0,max) : entries;
-    el.innerHTML = lim.map(([k,v])=>
+    const top = Math.max(...entries.map(e=>e[1]));
+    el.innerHTML = entries.map(([k,v])=>
       `<div class="row"><span class="name" title="${k}">${k}</span>`+
       `<span class="bar"><i style="width:${Math.round(v/top*100)}%;background:${color}"></i></span>`+
       `<span class="v">${v}</span></div>`).join('');
   }
 
+  function renderSin(lista){
+    const el = document.getElementById('sinReg');
+    const bk = document.getElementById('buscar');
+    if(!lista.length){ el.innerHTML='<div class="muted">✅ Todos han ingresado al portal</div>'; bk.style.display='none'; return; }
+    bk.style.display='block';
+    el.innerHTML = `<table class="no-tbl">
+      <thead><tr><th>#</th><th>Nombre</th><th>Número</th><th>Zona</th></tr></thead>
+      <tbody>${lista.map((u,i)=>
+        `<tr><td>${i+1}</td><td>${u.nombre}</td><td>${u.emp}</td><td class="zona">${u.zona||'—'}</td></tr>`
+      ).join('')}</tbody></table>`;
+  }
+
+  function filtrarSin(){
+    const q = document.getElementById('buscar').value.toLowerCase();
+    const filt = q ? _sinData.filter(u=>(u.nombre+u.zona+u.emp).toLowerCase().includes(q)) : _sinData;
+    renderSin(filt);
+  }
+
   async function cargar(){
-    const meta=document.getElementById('meta');
+    const meta = document.getElementById('meta');
     if(!API.startsWith('http')){ meta.innerHTML='<span class="err">Falta configurar la URL del backend (const API).</span>'; return; }
     meta.textContent='Cargando…';
     try{
-      const r=await fetch(API+'?action=stats');
-      const d=await r.json();
+      const r = await fetch(API+'?action=stats');
+      const d = await r.json();
       if(!d.ok) throw new Error(d.error||'error');
-      const usuarios=Object.keys(d.porUsuario||{}).length;
-      const tableros=Object.keys(d.porDashboard||{}).length;
+
+      const usuarios = Object.keys(d.porUsuario||{}).length;
+      const tableros = Object.keys(d.porDashboard||{}).length;
+      const sinReg   = (d.sinRegistro||[]).length;
+
       document.getElementById('kpis').innerHTML=[
-        ['Ingresos',d.totalLogins],['Aperturas de tablero',d.totalClicks],
-        ['Usuarios distintos',usuarios],['Tableros usados',tableros]
-      ].map(([l,n])=>`<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
-      bars(document.getElementById('dash'),  d.porDashboard||{}, '#F47B20');
-      bars(document.getElementById('users'), d.porUsuario||{},  '#1FA89B', 12);
-      bars(document.getElementById('zonas'), d.porZona||{},     '#2BD17E', 12);
-      bars(document.getElementById('dias'),  d.porDia||{},      '#8B5CF6');
-      meta.textContent='Actualizado: '+(d.generado||'');
+        ['Ingresos totales', d.totalLogins, ''],
+        ['Aperturas de tablero', d.totalClicks, ''],
+        ['Usuarios activos', usuarios, ''],
+        ['Sin registro', sinReg, sinReg>0?'warn':'']
+      ].map(([l,n,cls])=>`<div class="kpi ${cls}"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+
+      bars(document.getElementById('dash'),     d.porDashboard,  '#F47B20');
+      bars(document.getElementById('topMas'),   d.topMas||{},    '#1FA89B');
+      bars(document.getElementById('topMenos'),  d.topMenos||{},  '#FFC53D');
+      bars(document.getElementById('dias'),     d.porDia,        '#2BD17E');
+
+      _sinData = (d.sinRegistro||[]);
+      document.getElementById('sinBadge').textContent = sinReg + ' usuarios';
+      renderSin(_sinData);
+
+      meta.textContent = 'Actualizado: '+(d.generado||'');
     }catch(e){ meta.innerHTML='<span class="err">No se pudo cargar: '+e.message+'</span>'; }
   }
+
+  function exportCSV(){
+    if(!_sinData.length) return;
+    const rows = [['Numero','Nombre','Zona'],..._sinData.map(u=>[u.emp,u.nombre,u.zona])];
+    const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+    a.download='sin_registro_portal.csv'; a.click();
+  }
+
   cargar();
 </script>
 </body>
