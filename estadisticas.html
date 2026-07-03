@@ -125,13 +125,13 @@
     renderSin(filt);
   }
 
-  async function cargar(){
+  function cargar(){
     const meta = document.getElementById('meta');
     if(!API.startsWith('http')){ meta.innerHTML='<span class="err">Falta configurar la URL del backend (const API).</span>'; return; }
     meta.textContent='Cargando…';
-    try{
-      const r = await fetch(API+'?action=stats');
-      const d = await r.json();
+    // JSONP: único método que funciona con Apps Script desde cualquier origen
+    window._statsCallback = function(d){
+      try{
       if(!d.ok) throw new Error(d.error||'error');
 
       const usuarios = Object.keys(d.porUsuario||{}).length;
@@ -155,7 +155,13 @@
       renderSin(_sinData);
 
       meta.textContent = 'Actualizado: '+(d.generado||'');
-    }catch(e){ meta.innerHTML='<span class="err">No se pudo cargar: '+e.message+'</span>'; }
+      }catch(e){ meta.innerHTML='<span class="err">No se pudo cargar: '+e.message+'</span>'; }
+    };
+    // inyectar script tag (JSONP)
+    const old=document.getElementById('_jsonpStats'); if(old) old.remove();
+    const s=document.createElement('script'); s.id='_jsonpStats';
+    s.src=API+'?action=stats&callback=_statsCallback'; document.head.appendChild(s);
+    s.onerror=()=>{ meta.innerHTML='<span class="err">No se pudo conectar al backend.</span>'; };
   }
 
   function exportCSV(){
