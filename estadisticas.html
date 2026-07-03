@@ -27,7 +27,7 @@
   .panel h2{font-size:.95rem;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:8px}
   .panel h2 .badge{font-size:.7rem;background:rgba(255,255,255,.12);padding:2px 8px;border-radius:20px;font-weight:400}
   .row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.83rem}
-  .row .name{flex:0 0 44%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .name{flex:0 0 52%;font-size:.8rem;word-break:break-word;line-height:1.3}
   .bar{flex:1;height:13px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
   .bar>i{display:block;height:100%;border-radius:7px}
   .row .v{flex:0 0 40px;text-align:right;font-weight:700}
@@ -97,6 +97,23 @@
   const API = "https://script.google.com/macros/s/AKfycbx7_qlHuiQ7x9Pn6fXQhHHZuBppOu9jDFDGhaPjz9lqjJmQa2MtBIOgSy9sMQmjHhi-/exec";
   let _sinData = [];
 
+  const DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function fmtFecha(k){
+    try{ const d=new Date(k+'T12:00:00'); return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear(); }
+    catch(e){ return k; }
+  }
+
+  function barsConFecha(el, obj, color){
+    const entries = Object.entries(obj||{});
+    if(!entries.length){ el.innerHTML='<div class="muted">Sin datos aún</div>'; return; }
+    const top = Math.max(...entries.map(e=>e[1]));
+    el.innerHTML = entries.map(([k,v])=>
+      `<div class="row"><span class="name">${fmtFecha(k)}</span>`+
+      `<span class="bar"><i style="width:${Math.round(v/top*100)}%;background:${color}"></i></span>`+
+      `<span class="v">${v}</span></div>`).join('');
+  }
+
   function bars(el, obj, color){
     const entries = Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]);
     if(!entries.length){ el.innerHTML='<div class="muted">Sin datos aún</div>'; return; }
@@ -134,7 +151,7 @@
       try{
       if(!d.ok) throw new Error(d.error||'error');
 
-      const usuarios = Object.keys(d.porUsuario||{}).length;
+      const usuarios = Object.keys(d.topMas||{}).length + Object.keys(d.topMenos||{}).length > 0 ? new Set([...Object.keys(d.topMas||{}), ...Object.keys(d.topMenos||{})]).size : 0;
       const tableros = Object.keys(d.porDashboard||{}).length;
       const sinReg   = (d.sinRegistro||[]).length;
 
@@ -148,7 +165,11 @@
       bars(document.getElementById('dash'),     d.porDashboard,  '#F47B20');
       bars(document.getElementById('topMas'),   d.topMas||{},    '#1FA89B');
       bars(document.getElementById('topMenos'),  d.topMenos||{},  '#FFC53D');
-      bars(document.getElementById('dias'),     d.porDia,        '#2BD17E');
+      // Ordenar días cronológicamente (más reciente primero)
+      const diasOrdenados = Object.entries(d.porDia||{})
+        .sort((a,b)=> new Date(b[0]) - new Date(a[0]))
+        .reduce((o,[k,v])=>{ o[k]=v; return o; },{});
+      barsConFecha(document.getElementById('dias'), diasOrdenados, '#2BD17E');
 
       _sinData = (d.sinRegistro||[]);
       document.getElementById('sinBadge').textContent = sinReg + ' usuarios';
