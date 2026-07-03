@@ -100,8 +100,19 @@
   const DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   function fmtFecha(k){
-    try{ const d=new Date(k+'T12:00:00'); return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear(); }
-    catch(e){ return k; }
+    try{
+      // k puede venir como "2026-06-27" o "Sat Jun 27 2026 ..." o timestamp
+      const s = String(k).trim();
+      let d;
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+        // formato yyyy-MM-dd → agregar mediodía para evitar desfase de zona horaria
+        d = new Date(s.replace(/-/g,'/')+ ' 12:00:00');
+      } else {
+        d = new Date(s);
+      }
+      if(isNaN(d.getTime())) return s;
+      return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear();
+    }catch(e){ return k; }
   }
 
   function barsConFecha(el, obj, color){
