@@ -424,9 +424,9 @@
       if(d.ok){
         setSession({emp:emp,nombre:d.nombre,zona:d.zona});
         /* guardar credenciales para acceso rápido la próxima vez */
-        if(emp.toLowerCase()!=='campo26') saveCred(emp,pin);
+        if(emp.toLowerCase()!=='ver-26') saveCred(emp,pin);
         /* intentar registrar huella nativa (silencioso, sin confirm) */
-        if(bioOK() && emp.toLowerCase()!=='campo26'){
+        if(bioOK() && emp.toLowerCase()!=='ver-26'){
           try{
             const cred=await navigator.credentials.create({publicKey:{
               challenge:crypto.getRandomValues(new Uint8Array(32)),
@@ -449,7 +449,7 @@
   function showPortal(nombre){
     document.getElementById('login').style.display='none';
     const u=getSession();
-    const esMaster = u && String(u.emp).toLowerCase()==='campo26';
+    const esMaster = u && String(u.emp).toLowerCase()==='ver-26';
     const t=document.getElementById('userTag');
     if(t){
       let h='· '+(nombre||'');
